@@ -39,6 +39,7 @@ class AddExpenseActivity : AppCompatActivity() {
         binding.btnSave.setOnClickListener {
 
             val amount = binding.etAmount.text.toString().toDoubleOrNull()
+
             if (amount == null || amount <= 0) {
                 binding.etAmount.error = "Enter valid amount"
                 return@setOnClickListener

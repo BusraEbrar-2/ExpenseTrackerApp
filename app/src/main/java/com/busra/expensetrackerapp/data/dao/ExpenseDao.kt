@@ -15,4 +15,9 @@ interface ExpenseDao {
 
     @Query("SELECT * FROM expense_table ORDER BY date DESC")
     fun getAllExpenses(): LiveData<List<Expense>>
+
+
+    @Query("SELECT * FROM expense_table ORDER BY date DESC")
+    suspend fun getAllExpensesOnce(): List<Expense>
+
 }

@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.busra.expensetrackerapp.ui.add.AddExpenseActivity
+import com.busra.expensetrackerapp.util.Resource
 import com.busra.expensetrackerapp.viewmodel.MainViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -32,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         val tvBalance = findViewById<TextView>(R.id.tvBalance)
         val tvEmpty = findViewById<TextView>(R.id.tvEmpty)
 
-        viewModel.expenseList.observe(this) { list ->
+     /*   viewModel.expenseList.observe(this) { list ->
             adapter.setData(list)
 
             val balance = list.sumOf {
@@ -43,6 +44,45 @@ class MainActivity : AppCompatActivity() {
             tvEmpty.visibility =
                 if (list.isEmpty()) View.VISIBLE else View.GONE
         }
+
+
+      */
+        viewModel.expenses.observe(this) { result ->
+
+            when (result) {
+
+                is Resource.Loading -> {
+                    tvEmpty.visibility = View.GONE
+                    recyclerView.visibility = View.GONE
+                    // istersen progress ekle
+                }
+
+                is Resource.Success -> {
+                    val list = result.data
+
+                    adapter.setData(list)
+
+                    val balance = list.sumOf {
+                        if (it.type == "INCOME") it.amount else -it.amount
+                    }
+                    tvBalance.text = "₺$balance"
+
+                    tvEmpty.visibility =
+                        if (list.isEmpty()) View.VISIBLE else View.GONE
+
+                    recyclerView.visibility = View.VISIBLE
+                }
+
+                is Resource.Error -> {
+                    tvEmpty.text = result.message
+                    tvEmpty.visibility = View.VISIBLE
+                    recyclerView.visibility = View.GONE
+                }
+            }
+        }
+
+        viewModel.loadExpenses()
+
 
         findViewById<FloatingActionButton>(R.id.fabAdd).setOnClickListener {
             startActivity(Intent(this, AddExpenseActivity::class.java))
