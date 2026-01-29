@@ -1,23 +1,18 @@
 package com.busra.expensetrackerapp.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.busra.expensetrackerapp.data.database.ExpenseDatabase
 import com.busra.expensetrackerapp.data.entity.Expense
+import com.busra.expensetrackerapp.domain.usecase.AddExpenseUseCase
 import kotlinx.coroutines.launch
 
+class AddExpenseViewModel(
+    private val addExpenseUseCase: AddExpenseUseCase
+) : ViewModel() {
 
-class AddExpenseViewModel (application: Application) :
-AndroidViewModel(application)
-{
-    private val expenseDao=
-        ExpenseDatabase.getDatabase(application).expenseDao()
-
-
-    fun insertExpense (expense: Expense) {
-        viewModelScope.launch{
-            expenseDao.insertExpense(expense)
+    fun insertExpense(expense: Expense) {
+        viewModelScope.launch {
+            addExpenseUseCase(expense)
         }
     }
 }

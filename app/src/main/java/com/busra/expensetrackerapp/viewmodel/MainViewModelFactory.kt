@@ -3,18 +3,27 @@ package com.busra.expensetrackerapp.viewmodel
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.busra.expensetrackerapp.domain.usecase.GetCategoryTotalsUseCase
+import com.busra.expensetrackerapp.domain.usecase.GetExpensesByTypeUseCase
+import com.busra.expensetrackerapp.domain.usecase.GetExpensesUseCase
 
-class MainViewModelFactory (
-    private val application: Application
+class MainViewModelFactory(
+    private val getExpensesUseCase: GetExpensesUseCase,
+    private val getExpensesByTypeUseCase: GetExpensesByTypeUseCase,
+    private val getCategoryTotalsUseCase: GetCategoryTotalsUseCase
 
-) : ViewModelProvider.Factory // viewmodel üreten sınıf
-{
+) : ViewModelProvider.Factory {
+
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return MainViewModel(application) as T
-
+        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+            return MainViewModel(getExpensesUseCase, getExpensesByTypeUseCase,  getCategoryTotalsUseCase
+            )
+                    as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
-
 }
+
     /*
 
 2️⃣ ViewModel ile ne yapacaksın?

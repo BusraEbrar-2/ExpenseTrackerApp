@@ -6,9 +6,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.busra.expensetrackerapp.R
+import com.busra.expensetrackerapp.data.database.ExpenseDatabase
 import com.busra.expensetrackerapp.data.entity.Expense
+import com.busra.expensetrackerapp.data.repository.ExpenseRepository
 import com.busra.expensetrackerapp.databinding.ActivityAddExpenseBinding
+import com.busra.expensetrackerapp.domain.usecase.AddExpenseUseCase
 import com.busra.expensetrackerapp.viewmodel.AddExpenseViewModel
+import com.busra.expensetrackerapp.viewmodel.AddExpenseViewModelFactory
 
 class AddExpenseActivity : AppCompatActivity() {
 
@@ -21,10 +25,15 @@ class AddExpenseActivity : AppCompatActivity() {
         binding = ActivityAddExpenseBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel = ViewModelProvider(
-            this,
-            ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-        )[AddExpenseViewModel::class.java]
+        // ---- ViewModel setup (DOĞRU YAPI) ----
+        val dao = ExpenseDatabase.getDatabase(this).expenseDao()
+        val repository = ExpenseRepository(dao)
+        val addExpenseUseCase = AddExpenseUseCase(repository)
+        val factory = AddExpenseViewModelFactory(addExpenseUseCase)
+
+        viewModel = ViewModelProvider(this, factory)
+            .get(AddExpenseViewModel::class.java)
+        // -------------------------------------
 
         val categories = listOf("Food", "Transport", "Shopping", "Other")
         val adapter = ArrayAdapter(
@@ -39,7 +48,6 @@ class AddExpenseActivity : AppCompatActivity() {
         binding.btnSave.setOnClickListener {
 
             val amount = binding.etAmount.text.toString().toDoubleOrNull()
-
             if (amount == null || amount <= 0) {
                 binding.etAmount.error = "Enter valid amount"
                 return@setOnClickListener
