@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,7 +21,7 @@ import com.busra.expensetrackerapp.ui.main.CategoryTotalAdapter
 import com.busra.expensetrackerapp.util.Resource
 import com.busra.expensetrackerapp.viewmodel.MainViewModel
 import com.busra.expensetrackerapp.viewmodel.MainViewModelFactory
-import com.google.android.material.button.MaterialButtonToggleGroup
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
@@ -29,44 +30,48 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adapter: ExpenseAdapter
     private lateinit var categoryAdapter: CategoryTotalAdapter
 
+    private lateinit var btnAll: MaterialButton
+    private lateinit var btnIncome: MaterialButton
+    private lateinit var btnExpense: MaterialButton
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // 🔹 Expenses RecyclerView
+        // 🔹 Expenses RecyclerView (VERTICAL)
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
         adapter = ExpenseAdapter()
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
-        // 🔹 Category Totals RecyclerView
+        // 🔹 Category Totals RecyclerView (HORIZONTAL)
         val rvCategoryTotals = findViewById<RecyclerView>(R.id.rvCategoryTotals)
         categoryAdapter = CategoryTotalAdapter()
-        rvCategoryTotals.layoutManager = LinearLayoutManager(this)
+        rvCategoryTotals.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         rvCategoryTotals.adapter = categoryAdapter
-        rvCategoryTotals.isNestedScrollingEnabled = false
 
         val tvBalance = findViewById<TextView>(R.id.tvBalance)
         val tvEmpty = findViewById<TextView>(R.id.tvEmpty)
 
-        // 🔗 DEPENDENCY CHAIN
+        // 🔘 Filter Buttons
+        btnAll = findViewById(R.id.btnAll)
+        btnIncome = findViewById(R.id.btnIncome)
+        btnExpense = findViewById(R.id.btnExpense)
+
+        // 🔗 Dependency chain
         val dao = ExpenseDatabase.getDatabase(this).expenseDao()
         val repository = ExpenseRepository(dao)
 
-        val getExpensesUseCase = GetExpensesUseCase(repository)
-        val getExpensesByTypeUseCase = GetExpensesByTypeUseCase(repository)
-        val getCategoryTotalsUseCase = GetCategoryTotalsUseCase(repository)
-
         val factory = MainViewModelFactory(
-            getExpensesUseCase,
-            getExpensesByTypeUseCase,
-            getCategoryTotalsUseCase
+            GetExpensesUseCase(repository),
+            GetExpensesByTypeUseCase(repository),
+            GetCategoryTotalsUseCase(repository)
         )
 
-        viewModel = ViewModelProvider(this, factory)
-            .get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory)[MainViewModel::class.java]
 
-        // 👀 EXPENSES OBSERVER
+        // 👀 Expenses Observer
         viewModel.expenses.observe(this) { result ->
             when (result) {
 
@@ -77,17 +82,15 @@ class MainActivity : AppCompatActivity() {
 
                 is Resource.Success -> {
                     val list = result.data
-
-                    // Expenses
                     adapter.setData(list)
 
-                    // Balance
+                    // 💰 Balance
                     val balance = list.sumOf {
                         if (it.type == "INCOME") it.amount else -it.amount
                     }
                     tvBalance.text = "₺$balance"
 
-                    // Category totals (EXPENSE only)
+                    // 📊 Category totals (EXPENSE)
                     val categoryTotals = list
                         .filter { it.type == "EXPENSE" }
                         .groupBy { it.category }
@@ -102,7 +105,6 @@ class MainActivity : AppCompatActivity() {
 
                     tvEmpty.visibility =
                         if (list.isEmpty()) View.VISIBLE else View.GONE
-
                     recyclerView.visibility = View.VISIBLE
                 }
 
@@ -114,24 +116,52 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 🔘 Filter Toggle
-        val toggleGroup = findViewById<MaterialButtonToggleGroup>(R.id.filterToggleGroup)
-        toggleGroup.check(R.id.btnAll)
+        // 🔹 Default state
+        selectButton(btnAll)
         viewModel.loadExpenses()
 
-        toggleGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (!isChecked) return@addOnButtonCheckedListener
+        // 🔘 Button Clicks
+        btnAll.setOnClickListener {
+            selectButton(btnAll)
+            viewModel.loadExpenses()
+        }
 
-            when (checkedId) {
-                R.id.btnAll -> viewModel.loadExpenses()
-                R.id.btnIncome -> viewModel.loadExpensesByType("INCOME")
-                R.id.btnExpense -> viewModel.loadExpensesByType("EXPENSE")
-            }
+        btnIncome.setOnClickListener {
+            selectButton(btnIncome)
+            viewModel.loadExpensesByType("INCOME")
+        }
+
+        btnExpense.setOnClickListener {
+            selectButton(btnExpense)
+            viewModel.loadExpensesByType("EXPENSE")
         }
 
         // ➕ Add Expense
         findViewById<FloatingActionButton>(R.id.fabAdd).setOnClickListener {
             startActivity(Intent(this, AddExpenseActivity::class.java))
         }
+    }
+
+    // 🎨 Selected button UI
+    private fun selectButton(selected: MaterialButton) {
+        val buttons = listOf(btnAll, btnIncome, btnExpense)
+
+        buttons.forEach {
+            it.isChecked = false
+            it.setBackgroundColor(
+                ContextCompat.getColor(this, android.R.color.transparent)
+            )
+            it.setTextColor(
+                ContextCompat.getColor(this, R.color.purple_500)
+            )
+        }
+
+        selected.isChecked = true
+        selected.setBackgroundColor(
+            ContextCompat.getColor(this, R.color.purple_500)
+        )
+        selected.setTextColor(
+            ContextCompat.getColor(this, android.R.color.white)
+        )
     }
 }

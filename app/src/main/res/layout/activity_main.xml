@@ -9,14 +9,16 @@
     <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:title="Expense Tracker"
         android:titleTextColor="@android:color/white"
         android:background="?attr/colorPrimary"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Balance Card -->
+    <!-- Balance -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardBalance"
         android:layout_width="0dp"
@@ -38,7 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Total Balance"
-                android:textColor="#666666"
+                android:textColor="#666"
                 android:textSize="14sp"/>
 
             <TextView
@@ -46,78 +48,94 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="₺0"
-                android:textStyle="bold"
-                android:textSize="28sp"/>
+                android:textSize="28sp"
+                android:textStyle="bold"/>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Category Totals RecyclerView -->
+    <!-- Category Title -->
+    <TextView
+        android:id="@+id/tvCategoryTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kategori Özeti"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:textColor="#444"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/cardBalance"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <!-- Category RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCategoryTotals"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/cardBalance"
+        android:paddingStart="12dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/tvCategoryTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Filter Toggle Group -->
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/filterToggleGroup"
+    <!-- FILTER BUTTONS (AYRI AYRI) -->
+    <LinearLayout
+        android:id="@+id/filterButtons"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:paddingHorizontal="8dp"
-        app:singleSelection="true"
-        app:selectionRequired="true"
-        app:showDividers="middle"
+        android:layout_margin="8dp"
+        android:orientation="horizontal"
+        android:weightSum="3"
         app:layout_constraintTop_toBottomOf="@id/rvCategoryTotals"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAll"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="All"/>
+            android:text="All"
+            android:layout_marginEnd="6dp"
+            app:cornerRadius="12dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnIncome"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Income"/>
+            android:text="Income"
+            android:layout_marginHorizontal="6dp"
+            app:cornerRadius="12dp"/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnExpense"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Expense"/>
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+            android:text="Expense"
+            android:layout_marginStart="6dp"
+            app:cornerRadius="12dp"/>
+    </LinearLayout>
 
-    <!-- Expenses RecyclerView -->
+    <!-- Transactions -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@id/filterToggleGroup"
+        app:layout_constraintTop_toBottomOf="@id/filterButtons"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Empty State -->
+    <!-- EMPTY STATE -->
     <TextView
         android:id="@+id/tvEmpty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Henüz harcama eklenmedi"
-        android:textColor="#888888"
+        android:text="Henüz kayıt yok"
+        android:textColor="#888"
         android:textSize="16sp"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="@id/recyclerView"
@@ -125,7 +143,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- FloatingActionButton -->
+    <!-- FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAdd"
         android:layout_width="wrap_content"
